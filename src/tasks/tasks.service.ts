@@ -48,20 +48,24 @@ export class TasksService {
   }
 
   async deleteTask(id: number): Promise<void> {
-    const found = await this.getTaskById(id);
-    if (!found) {
+    // const found = await this.getTaskById(id);
+    // if (!found) {
+    //   throw new NotFoundException(`Task with ID "${id}" not found`);
+    // }
+    // this.taskRepository.remove(found);
+    const result = await this.taskRepository.delete(id);
+    if (!result.affected) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
-    this.taskRepository.remove(found);
+    // delete 를 사용하는 경우 DB 를 한 번만 불러와도 된다는 장점
+    // DB 에 있으면 지우고 없으면 404 error
   }
 
-  // deleteTask(id: string): void {
-  //   const found = this.getTaskById(id);
-  //   this.tasks = this.tasks.filter((task) => task.id !== found.id);
-  // }
-  // updateTaskStatus(id: string, status: TaskStatus): Task {
-  //   const task = this.getTaskById(id);
-  //   task.status = status;
-  //   return task;
-  // }
+  async updateTaskStatus(id: number, status: TaskStatus): Promise<Task> {
+    const task = await this.getTaskById(id);
+    task.status = status;
+    await task.save();
+    // 원래는 task.status = status; 만 해도 업데이트 됐는데 왜 save() 해야 하는지? 엔티티라서?
+    return task;
+  }
 }
